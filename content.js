@@ -50,18 +50,23 @@ async function iniciarCalculo(recalcular = false) {
 
     const extrairLocal = (titulo, ufDetalhes) => {
         const limpo = titulo
-            .replace(/\[.*?\]/g, '')
             .replace(/\s+/g, ' ')
             .trim();
-        const partes = limpo.split('/').map(parte => parte.trim()).filter(Boolean);
-        const ufTitulo = partes.at(-1)?.match(/^[A-Z]{2}$/i)?.[0]?.toUpperCase() || '';
+        const anotacao = limpo.match(/\[([^\]]+)\]\s*$/)?.[1]?.trim() || '';
+        const cidadeAnotada = anotacao.replace(/[-/]\s*[A-Z]{2}$/i, '').trim();
+        const partes = (cidadeAnotada || limpo).split('/').map(parte => parte.trim()).filter(Boolean);
+        const ufTitulo = anotacao.match(/[-/]\s*([A-Z]{2})$/i)?.[1]?.toUpperCase()
+            || partes.at(-1)?.match(/^[A-Z]{2}$/i)?.[0]?.toUpperCase()
+            || '';
         const uf = ufDetalhes || ufTitulo;
         let cidade = ufTitulo && partes.length > 1 ? partes.at(-2) : limpo;
 
         cidade = cidade
-            .replace(/PREFEITURA MUNICIPAL DE/g, '')
-            .replace(/MUNIC[ÍI]PIO DE/g, '')
+            .replace(/^.*PREFEITURA MUNICIPAL DE\s+/g, '')
+            .replace(/^MUNIC[ÍI]PIO DE\s+/g, '')
             .trim();
+
+        if (cidadeAnotada) cidade = cidadeAnotada;
 
         return { cidade, uf };
     };
