@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Calculador Distância Effecti",
+  "version": "2.1",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "icons": {
+    "16": "lib/images/marker-icon.png",
+    "32": "lib/images/marker-icon.png",
+    "48": "lib/images/marker-icon-2x.png",
+    "128": "lib/images/marker-icon-2x.png"
+  },
+  "host_permissions": [
+    "https://*.effecti.com.br/*",
+    "https://nominatim.openstreetmap.org/*",
+    "https://photon.komoot.io/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "lib/images/marker-icon.png",
+      "32": "lib/images/marker-icon.png",
+      "48": "lib/images/marker-icon-2x.png",
+      "128": "lib/images/marker-icon-2x.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.effecti.com.br/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/images/*.png"],
+      "matches": ["https://*.effecti.com.br/*"]
+    }
+  ]
+}
