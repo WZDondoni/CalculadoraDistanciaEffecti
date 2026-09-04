@@ -99,6 +99,7 @@ popup.js       Busca, cadastro e remocao das cidades-base
 content.js     Leitura da pagina Effecti e calculo das distancias
 lib/           Leaflet, estilos e imagens do mapa
 README.md      Documentacao do projeto
+LICENSE        Licenca MIT e atribuicao do autor
 ```
 
 ## Permissoes
@@ -125,6 +126,14 @@ Esses servicos podem impor limites de requisicoes ou ficar temporariamente indis
 - Os nomes das cidades pesquisadas sao enviados aos servicos Photon ou Nominatim para obter coordenadas.
 - A extensao nao possui servidor proprio nem envia os dados para uma API mantida por este projeto.
 - Links de avisos da Effecti podem conter identificadores de acesso. Nao publique esses links em repositorios, documentacao ou chamados de suporte.
+
+## Licenca
+
+Este projeto esta disponivel sob a licenca MIT. Voce pode usar, copiar, modificar e distribuir o software, desde que mantenha o arquivo `LICENSE`, o aviso de copyright e a atribuicao ao autor:
+
+```text
+Copyright (c) 2026 WATILEY ZANELATO DONDONI
+```
 
 ## Solucao de problemas
 
