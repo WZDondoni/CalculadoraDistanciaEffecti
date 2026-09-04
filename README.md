@@ -9,12 +9,14 @@ Extensao para Google Chrome que calcula a distancia entre os municipios exibidos
 - Exibicao das cidades cadastradas no mapa.
 - Calculo da distancia para todas as cidades-base.
 - Indicacao da cidade-base mais proxima.
-- Recalculo apos incluir ou remover cidades.
+- Uso das cidades-base atualizadas no proximo calculo.
 - Identificacao automatica de novos avisos carregados pela pagina da Effecti.
+- Reconhecimento de diferentes formatos de titulos, incluindo orgaos e instituicoes.
+- Link com icone de mapa para abrir no OpenStreetMap o local usado no calculo.
 
 ## Requisitos
 
-- Google Chrome com suporte a Manifest V3.
+- Google Chrome, Microsoft Edge ou Brave com suporte a Manifest V3.
 - Acesso a uma pagina da plataforma Effecti.
 - Conexao com a internet para consultar coordenadas geograficas.
 
@@ -30,9 +32,9 @@ Esta extensao nao precisa ser publicada na Chrome Web Store para ser usada. A in
 4. Escolha um local facil de encontrar, como a Area de Trabalho.
 5. Mantenha a pasta extraida no computador. Nao selecione o arquivo ZIP diretamente no Chrome.
 
-### Carregar no Chrome
+### Carregar no navegador
 
-1. Abra `chrome://extensions` no Google Chrome.
+1. Abra `chrome://extensions` no Chrome ou `edge://extensions` no Microsoft Edge.
 2. Ative o **Modo do desenvolvedor**.
 3. Clique em **Carregar sem compactacao**.
 4. Selecione a pasta extraida que contem diretamente o arquivo `manifest.json`.
@@ -60,7 +62,8 @@ Se os arquivos forem alterados manualmente, basta abrir `chrome://extensions` e 
 5. Repita o processo para adicionar outras cidades.
 6. Abra a pagina de avisos da Effecti.
 7. Clique em **CALCULAR DISTANCIAS**.
-8. Consulte o resultado exibido abaixo de cada municipio.
+8. Consulte o resultado exibido abaixo de cada municipio ou orgao reconhecido.
+9. Clique no icone de mapa ao lado do titulo para conferir no OpenStreetMap o local selecionado.
 
 Exemplo de resultado:
 
@@ -73,6 +76,17 @@ Para remover uma cidade-base, abra o popup e clique no botao `X` correspondente.
 ## Funcionamento
 
 A extensao identifica os titulos dos avisos da Effecti, extrai o municipio e o estado, consulta as coordenadas geograficas e calcula a distancia ate cada cidade-base cadastrada.
+
+Os titulos podem aparecer em formatos diferentes. A extensao reconhece, por exemplo:
+
+```text
+REDENCAO
+EMBRAPA GADO DE LEITE/JUIZ DE FORA/MG
+MUNICIPIO DE MESOPOLIS [MESOPOLIS-SP]
+MMG-PREFEITURA MUNICIPAL DE PERDOES
+```
+
+Quando o titulo nao informa claramente a cidade, a extensao usa o estado exibido nos detalhes do aviso e consulta o nome completo da instituicao. O icone de mapa abre as coordenadas efetivamente encontradas pelo servico de geocodificacao no OpenStreetMap.
 
 O calculo usa a formula de Haversine, portanto representa uma distancia geografica aproximada em linha reta. Ele nao representa a distancia ou o tempo de viagem por rodovia.
 
@@ -99,9 +113,9 @@ README.md      Documentacao do projeto
 
 A extensao usa servicos de geocodificacao para converter nomes de cidades em coordenadas:
 
-- Photon: servico principal usado para pesquisa e fallback.
-- Nominatim/OpenStreetMap: servico alternativo de geocodificacao.
-- OpenStreetMap: fornece as imagens do mapa exibido no popup.
+- Nominatim/OpenStreetMap: primeira tentativa para localizar cidades e instituicoes.
+- Photon: fallback da geocodificacao e servico usado na pesquisa de cidades do popup.
+- OpenStreetMap: fornece as imagens do mapa do popup e exibe o local encontrado ao clicar no icone de mapa.
 
 Esses servicos podem impor limites de requisicoes ou ficar temporariamente indisponiveis. Por isso, a extensao possui fallback entre Photon e Nominatim e cache durante a sessao da pagina.
 
@@ -130,7 +144,9 @@ Esses servicos podem impor limites de requisicoes ou ficar temporariamente indis
 
 ### A mensagem informa que o local nao foi encontrado
 
-O servico de geocodificacao pode nao reconhecer o nome informado ou pode estar temporariamente indisponivel. Tente novamente mais tarde ou pesquise a cidade com outro resultado no popup.
+O titulo pode nao conter uma cidade explicita ou o servico de geocodificacao pode nao reconhecer o nome da instituicao. Verifique se o aviso possui um campo `Estado:` valido, confirme a conexao com a internet e tente novamente mais tarde.
+
+Quando o local for encontrado, use o icone de mapa ao lado do titulo para conferir se o ponto selecionado esta correto.
 
 ### A distancia parece diferente da rota no mapa
 
@@ -148,8 +164,9 @@ Get-Content .\manifest.json -Raw | ConvertFrom-Json | Out-Null
 
 ## Limitacoes conhecidas
 
-- Mudancas no layout ou nos seletores HTML da Effecti podem exigir ajustes no `content.js`.
+- Mudancas no layout, nos titulos ou nos seletores HTML da Effecti podem exigir ajustes no `content.js`.
 - O resultado depende da disponibilidade e precisao dos servicos de geocodificacao.
+- Instituicoes sem cidade explicita podem depender do reconhecimento do nome completo pelo servico de geocodificacao.
 - A extensao foi projetada para uso local e ainda nao possui processo de publicacao na Chrome Web Store.
 
 ## Versao

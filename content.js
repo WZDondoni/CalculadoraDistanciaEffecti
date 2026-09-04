@@ -95,6 +95,15 @@ async function iniciarCalculo(recalcular = false) {
         try {
             const local = await localizar(cidade, uf);
             if (local) {
+                const linkMapa = document.createElement('a');
+                linkMapa.href = `https://www.openstreetmap.org/?mlat=${local.lat}&mlon=${local.lon}#map=16/${local.lat}/${local.lon}`;
+                linkMapa.target = '_blank';
+                linkMapa.rel = 'noopener noreferrer';
+                linkMapa.title = `Abrir local encontrado: ${cidade}, ${uf}`;
+                linkMapa.innerText = ' 🗺️';
+                linkMapa.style.cssText = 'font-size: 16px; text-decoration: none; margin-left: 6px;';
+                h2.appendChild(linkMapa);
+
                 const distancias = bases.map(b => {
                     const dVal = dist(local.lat, local.lon, b.lat, b.lon);
                     return { d: dVal, n: b.nome };
