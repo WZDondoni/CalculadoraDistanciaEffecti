@@ -48,18 +48,36 @@ async function iniciarCalculo(recalcular = false) {
         return local;
     };
 
+    const extrairLocal = (titulo, ufDetalhes) => {
+        const limpo = titulo
+            .replace(/\[.*?\]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const partes = limpo.split('/').map(parte => parte.trim()).filter(Boolean);
+        const ufTitulo = partes.at(-1)?.match(/^[A-Z]{2}$/i)?.[0]?.toUpperCase() || '';
+        const uf = ufDetalhes || ufTitulo;
+        let cidade = ufTitulo && partes.length > 1 ? partes.at(-2) : limpo;
+
+        cidade = cidade
+            .replace(/PREFEITURA MUNICIPAL DE/g, '')
+            .replace(/MUNIC[ÍI]PIO DE/g, '')
+            .trim();
+
+        return { cidade, uf };
+    };
+
     // Cada aviso da página possui um h2 e um bloco de detalhes logo abaixo.
     const titulos = document.querySelectorAll('h2');
     for (const h2 of titulos) {
         if (h2.querySelector('.dist-marker')) continue;
 
         const texto = h2.innerText.trim().toUpperCase();
-        if (!texto.includes("MUNICÍPIO") && !texto.includes("MUNICIPIO") && !texto.includes("PREFEITURA")) continue;
 
         const card = h2.parentElement?.parentElement || h2.parentElement;
         const detalhes = card?.innerText || "";
         const estadoMatch = detalhes.match(/Estado:\s*([A-Z]{2})/i);
-        const uf = estadoMatch ? estadoMatch[1].toUpperCase() : (texto.match(/-([A-Z]{2})\]?$/)?.[1] || "");
+        const { cidade, uf } = extrairLocal(texto, estadoMatch?.[1]?.toUpperCase() || '');
+        if (!cidade || !uf) continue;
 
         h2.style.whiteSpace = 'normal';
         h2.style.display = 'block';
@@ -70,7 +88,6 @@ async function iniciarCalculo(recalcular = false) {
         h2.appendChild(labelDist);
 
         try {
-            const cidade = texto.replace(/PREFEITURA MUNICIPAL DE/g, '').replace(/MUNIC[ÍI]PIO DE/g, '').replace(/\[.*?\]/g, '').trim();
             const local = await localizar(cidade, uf);
             if (local) {
                 const distancias = bases.map(b => {
