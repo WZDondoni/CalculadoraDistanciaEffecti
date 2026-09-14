@@ -10,7 +10,14 @@ L.Icon.Default.mergeOptions({
 
 document.addEventListener('DOMContentLoaded', () => {
     map = L.map('map').setView([-15.78, -47.93], 4);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // O tile do OpenStreetMap oficial costuma ser bloqueado em extensões por política do provedor.
+    // A alternativa abaixo é um espelho sem API key e funciona em popup de extensão.
+    L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        subdomains: ['a', 'b', 'c'],
+        maxZoom: 19
+    }).addTo(map);
 
     chrome.storage.local.get(['cidadesReferencia'], (res) => {
         if (res.cidadesReferencia) { cidades = res.cidadesReferencia; render(); }

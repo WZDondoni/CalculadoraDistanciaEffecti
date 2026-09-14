@@ -12,7 +12,8 @@
   "host_permissions": [
     "https://*.effecti.com.br/*",
     "https://nominatim.openstreetmap.org/*",
-    "https://photon.komoot.io/*"
+    "https://photon.komoot.io/*",
+    "https://*.tile.openstreetmap.de/*"
   ],
   "action": {
     "default_popup": "popup.html",
