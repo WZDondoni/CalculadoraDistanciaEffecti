@@ -1,6 +1,6 @@
 # Calculadora de Distancias Effecti
 
-Extensao para Google Chrome que calcula a distancia entre os municipios exibidos na Effecti e uma ou mais cidades-base cadastradas pelo usuario.
+Extensao para Google Chrome que calcula a distancia entre municipios exibidos na Effecti ou em processos do Portal de Compras Publicas e uma ou mais cidades-base cadastradas pelo usuario.
 
 ## Funcionalidades
 
@@ -11,13 +11,15 @@ Extensao para Google Chrome que calcula a distancia entre os municipios exibidos
 - Indicacao da cidade-base mais proxima.
 - Uso das cidades-base atualizadas no proximo calculo.
 - Identificacao automatica de novos avisos carregados pela pagina da Effecti.
-- Reconhecimento de diferentes formatos de titulos, incluindo orgaos e instituicoes.
+- Suporte a paginas de processo do Portal de Compras Publicas.
+- Reconhecimento de diferentes formatos de titulos, incluindo orgaos, instituicoes e nomes de empresas/entidades publicas.
 - Link com icone de mapa para abrir no OpenStreetMap o local usado no calculo.
+- Estrutura modular para separar regras especificas de cada portal.
 
 ## Requisitos
 
 - Google Chrome, Microsoft Edge ou Brave com suporte a Manifest V3.
-- Acesso a uma pagina da plataforma Effecti.
+- Acesso a uma pagina da plataforma Effecti ou a um processo do Portal de Compras Publicas.
 - Conexao com a internet para consultar coordenadas geograficas.
 
 ## Instalacao local
@@ -60,9 +62,9 @@ Se os arquivos forem alterados manualmente, basta abrir `chrome://extensions` e 
 3. Selecione uma cidade nos resultados.
 4. Informe o nome da cidade-base quando solicitado.
 5. Repita o processo para adicionar outras cidades.
-6. Abra a pagina de avisos da Effecti.
+6. Abra a pagina de avisos da Effecti ou um processo do Portal de Compras Publicas.
 7. Clique em **CALCULAR DISTANCIAS**.
-8. Consulte o resultado exibido abaixo de cada municipio ou orgao reconhecido.
+8. Consulte o resultado exibido abaixo do municipio ou da prefeitura reconhecida.
 9. Clique no icone de mapa ao lado do titulo para conferir no OpenStreetMap o local selecionado.
 
 Exemplo de resultado:
@@ -75,7 +77,9 @@ Para remover uma cidade-base, abra o popup e clique no botao `X` correspondente.
 
 ## Funcionamento
 
-A extensao identifica os titulos dos avisos da Effecti, extrai o municipio e o estado, consulta as coordenadas geograficas e calcula a distancia ate cada cidade-base cadastrada.
+A extensao identifica o local do processo em cada portal suportado, extrai o municipio e o estado, consulta as coordenadas geograficas e calcula a distancia ate cada cidade-base cadastrada.
+
+Na Effecti, a logica analisa os titulos dos avisos e os blocos de detalhes. No Portal de Compras Publicas, ela busca o nome da prefeitura no processo e insere o resultado logo abaixo daquele nome.
 
 Os titulos podem aparecer em formatos diferentes. A extensao reconhece, por exemplo:
 
@@ -93,13 +97,16 @@ O calculo usa a formula de Haversine, portanto representa uma distancia geografi
 ## Estrutura dos arquivos
 
 ```text
-manifest.json  Configuracao, permissoes e icones da extensao
-popup.html     Interface do popup
-popup.js       Busca, cadastro e remocao das cidades-base
-content.js     Leitura da pagina Effecti e calculo das distancias
-lib/           Leaflet, estilos e imagens do mapa
-README.md      Documentacao do projeto
-LICENSE        Licenca MIT e atribuicao do autor
+manifest.json    Configuracao, permissoes e icones da extensao
+popup.html       Interface do popup
+popup.js         Busca, cadastro e remocao das cidades-base
+content.js       Ponto de entrada: identifica o portal e dispara a regra correta
+utils.js         Funcoes compartilhadas de geocodificacao e calculo de distancia
+effecti.js       Regras especificas para paginas da Effecti
+portalCompras.js Regras especificas para paginas do Portal de Compras Publicas
+lib/             Leaflet, estilos e imagens do mapa
+README.md        Documentacao do projeto
+LICENSE          Licenca MIT e atribuicao do autor
 ```
 
 ## Permissoes
@@ -108,6 +115,7 @@ LICENSE        Licenca MIT e atribuicao do autor
 - `activeTab`: permite atuar na aba ativa quando o usuario solicita o calculo.
 - `scripting`: permite reinjetar o script da pagina quando necessario.
 - `host_permissions` para Effecti: permite executar a extensao nas paginas da plataforma.
+- `host_permissions` para Portal de Compras Publicas: permite executar a extensao em paginas de processo do portal.
 - `host_permissions` para Photon e Nominatim: permitem consultar coordenadas de cidades.
 
 ## Servicos externos
@@ -168,12 +176,16 @@ Os arquivos usam JavaScript executado diretamente pelo Chrome, sem etapa de comp
 ```powershell
 node --check .\popup.js
 node --check .\content.js
+node --check .\effecti.js
+node --check .\portalCompras.js
+node --check .\utils.js
 Get-Content .\manifest.json -Raw | ConvertFrom-Json | Out-Null
 ```
 
 ## Limitacoes conhecidas
 
-- Mudancas no layout, nos titulos ou nos seletores HTML da Effecti podem exigir ajustes no `content.js`.
+- Mudancas no layout, nos titulos ou nos seletores HTML da Effecti podem exigir ajustes no modulo correspondente.
+- Mudancas no layout dos processos do Portal de Compras Publicas podem exigir ajustes no modulo `portalCompras.js`.
 - O resultado depende da disponibilidade e precisao dos servicos de geocodificacao.
 - Instituicoes sem cidade explicita podem depender do reconhecimento do nome completo pelo servico de geocodificacao.
 - A extensao foi projetada para uso local e ainda nao possui processo de publicacao na Chrome Web Store.
