@@ -97,8 +97,11 @@ async function calcularNaAba() {
         }
 
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tab?.id || !tab.url?.includes('effecti.com.br')) {
-            throw new Error('Abra um aviso da Effecti na aba ativa.');
+        const url = tab?.url || '';
+        const ehEffecti = url.includes('effecti.com.br');
+        const ehPortalCompras = url.includes('portaldecompraspublicas.com.br/processos/');
+        if (!tab?.id || (!ehEffecti && !ehPortalCompras)) {
+            throw new Error('Abra um aviso da Effecti ou de um processo do Portal de Compras Públicas na aba ativa.');
         }
 
         try {

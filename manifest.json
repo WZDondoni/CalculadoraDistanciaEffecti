@@ -11,6 +11,7 @@
   },
   "host_permissions": [
     "https://*.effecti.com.br/*",
+    "https://*.portaldecompraspublicas.com.br/*",
     "https://nominatim.openstreetmap.org/*",
     "https://photon.komoot.io/*",
     "https://*.tile.openstreetmap.de/*"
@@ -26,8 +27,16 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.effecti.com.br/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://*.effecti.com.br/*",
+        "https://*.portaldecompraspublicas.com.br/processos/*"
+      ],
+      "js": [
+        "utils.js",
+        "effecti.js",
+        "portalCompras.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
