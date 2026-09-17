@@ -7,7 +7,7 @@ function calcularDistanciaKm(lat1, lon1, lat2, lon2) {
 }
 
 async function localizarCidade(cidade, uf) {
-    const consulta = `${cidade}, ${uf}, Brasil`;
+    const consulta = `${cidade}${uf ? `, ${uf}` : ''}, Brasil`;
     const chave = consulta.toUpperCase();
     const cache = localizarCidade.cache || (localizarCidade.cache = new Map());
     if (cache.has(chave)) return cache.get(chave);

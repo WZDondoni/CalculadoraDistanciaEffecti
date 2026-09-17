@@ -100,14 +100,18 @@ async function calcularNaAba() {
         const url = tab?.url || '';
         const ehEffecti = url.includes('effecti.com.br');
         const ehPortalCompras = url.includes('portaldecompraspublicas.com.br/processos/');
-        if (!tab?.id || (!ehEffecti && !ehPortalCompras)) {
-            throw new Error('Abra um aviso da Effecti ou de um processo do Portal de Compras Públicas na aba ativa.');
+        const ehLicitarDigital = url.includes('app2.licitardigital.com.br/pesquisa/');
+        if (!tab?.id || (!ehEffecti && !ehPortalCompras && !ehLicitarDigital)) {
+            throw new Error('Abra um processo da Effecti, do Portal de Compras Públicas ou do Licitar Digital na aba ativa.');
         }
 
         try {
             await chrome.tabs.sendMessage(tab.id, { action: "CALCULAR" });
         } catch (error) {
-            await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
+            await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: ['utils.js', 'effecti.js', 'portalCompras.js', 'licitardigital.js', 'content.js']
+            });
             await chrome.tabs.sendMessage(tab.id, { action: "CALCULAR" });
         }
         status.textContent = 'Cálculo iniciado na página.';

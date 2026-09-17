@@ -11,6 +11,8 @@ async function iniciarCalculo(recalcular = false) {
         ? 'effecti'
         : location.hostname.includes('portaldecompraspublicas.com.br')
             ? 'portal'
+            : location.hostname === 'app2.licitardigital.com.br'
+                ? 'licitardigital'
             : null;
 
     if (!site) return;
@@ -22,6 +24,11 @@ async function iniciarCalculo(recalcular = false) {
 
     if (site === 'portal') {
         await window.processarPortalCompras(bases);
+        return;
+    }
+
+    if (site === 'licitardigital') {
+        await window.processarLicitarDigital(bases);
     }
 }
 

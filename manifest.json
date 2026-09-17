@@ -12,6 +12,7 @@
   "host_permissions": [
     "https://*.effecti.com.br/*",
     "https://*.portaldecompraspublicas.com.br/*",
+    "https://app2.licitardigital.com.br/*",
     "https://nominatim.openstreetmap.org/*",
     "https://photon.komoot.io/*",
     "https://*.tile.openstreetmap.de/*"
@@ -29,12 +30,14 @@
     {
       "matches": [
         "https://*.effecti.com.br/*",
-        "https://*.portaldecompraspublicas.com.br/processos/*"
+        "https://*.portaldecompraspublicas.com.br/processos/*",
+        "https://app2.licitardigital.com.br/pesquisa/*"
       ],
       "js": [
         "utils.js",
         "effecti.js",
         "portalCompras.js",
+        "licitardigital.js",
         "content.js"
       ],
       "run_at": "document_idle"

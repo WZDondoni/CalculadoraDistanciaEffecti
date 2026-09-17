@@ -1,6 +1,6 @@
 # Calculadora de Distancias Effecti
 
-Extensao para Google Chrome que calcula a distancia entre municipios exibidos na Effecti ou em processos do Portal de Compras Publicas e uma ou mais cidades-base cadastradas pelo usuario.
+Extensao para Google Chrome que calcula a distancia entre municipios e entidades exibidos na Effecti, em processos do Portal de Compras Publicas ou no Licitar Digital e uma ou mais cidades-base cadastradas pelo usuario.
 
 ## Funcionalidades
 
@@ -12,6 +12,7 @@ Extensao para Google Chrome que calcula a distancia entre municipios exibidos na
 - Uso das cidades-base atualizadas no proximo calculo.
 - Identificacao automatica de novos avisos carregados pela pagina da Effecti.
 - Suporte a paginas de processo do Portal de Compras Publicas.
+- Suporte a paginas de processo do Licitar Digital.
 - Reconhecimento de diferentes formatos de titulos, incluindo orgaos, instituicoes e nomes de empresas/entidades publicas.
 - Link com icone de mapa para abrir no OpenStreetMap o local usado no calculo.
 - Estrutura modular para separar regras especificas de cada portal.
@@ -19,7 +20,7 @@ Extensao para Google Chrome que calcula a distancia entre municipios exibidos na
 ## Requisitos
 
 - Google Chrome, Microsoft Edge ou Brave com suporte a Manifest V3.
-- Acesso a uma pagina da plataforma Effecti ou a um processo do Portal de Compras Publicas.
+- Acesso a uma pagina da plataforma Effecti, a um processo do Portal de Compras Publicas ou a um processo do Licitar Digital.
 - Conexao com a internet para consultar coordenadas geograficas.
 
 ## Instalacao local
@@ -62,9 +63,9 @@ Se os arquivos forem alterados manualmente, basta abrir `chrome://extensions` e 
 3. Selecione uma cidade nos resultados.
 4. Informe o nome da cidade-base quando solicitado.
 5. Repita o processo para adicionar outras cidades.
-6. Abra a pagina de avisos da Effecti ou um processo do Portal de Compras Publicas.
+6. Abra a pagina de avisos da Effecti, um processo do Portal de Compras Publicas ou um processo do Licitar Digital.
 7. Clique em **CALCULAR DISTANCIAS**.
-8. Consulte o resultado exibido abaixo do municipio ou da prefeitura reconhecida.
+8. Consulte o resultado exibido abaixo do municipio, da prefeitura ou da entidade reconhecida.
 9. Clique no icone de mapa ao lado do titulo para conferir no OpenStreetMap o local selecionado.
 
 Exemplo de resultado:
@@ -79,7 +80,7 @@ Para remover uma cidade-base, abra o popup e clique no botao `X` correspondente.
 
 A extensao identifica o local do processo em cada portal suportado, extrai o municipio e o estado, consulta as coordenadas geograficas e calcula a distancia ate cada cidade-base cadastrada.
 
-Na Effecti, a logica analisa os titulos dos avisos e os blocos de detalhes. No Portal de Compras Publicas, ela busca o nome da prefeitura no processo e insere o resultado logo abaixo daquele nome.
+Na Effecti, a logica analisa os titulos dos avisos e os blocos de detalhes. No Portal de Compras Publicas, ela usa o botao que representa a entidade do processo. No Licitar Digital, ela usa o `h1` do cabecalho do processo, no formato `Pregao - entidade`, sem depender da palavra `prefeitura`. Assim, tambem pode processar consorcios, comandos e batalhoes quando o nome da entidade for o campo principal do processo.
 
 Os titulos podem aparecer em formatos diferentes. A extensao reconhece, por exemplo:
 
@@ -104,6 +105,7 @@ content.js       Ponto de entrada: identifica o portal e dispara a regra correta
 utils.js         Funcoes compartilhadas de geocodificacao e calculo de distancia
 effecti.js       Regras especificas para paginas da Effecti
 portalCompras.js Regras especificas para paginas do Portal de Compras Publicas
+licitardigital.js Regras especificas para paginas do Licitar Digital
 lib/             Leaflet, estilos e imagens do mapa
 README.md        Documentacao do projeto
 LICENSE          Licenca MIT e atribuicao do autor
@@ -116,6 +118,7 @@ LICENSE          Licenca MIT e atribuicao do autor
 - `scripting`: permite reinjetar o script da pagina quando necessario.
 - `host_permissions` para Effecti: permite executar a extensao nas paginas da plataforma.
 - `host_permissions` para Portal de Compras Publicas: permite executar a extensao em paginas de processo do portal.
+- `host_permissions` para Licitar Digital: permite executar a extensao em paginas de pesquisa de processos.
 - `host_permissions` para Photon e Nominatim: permitem consultar coordenadas de cidades.
 
 ## Servicos externos
@@ -155,9 +158,10 @@ Copyright (c) 2026 WATILEY ZANELATO DONDONI
 ### O botao nao calcula
 
 1. Confirme que existe pelo menos uma cidade-base cadastrada.
-2. Verifique se a aba ativa e uma pagina da Effecti.
-3. Atualize a pagina da Effecti.
-4. Recarregue a extensao e tente novamente.
+2. Verifique se a aba ativa e uma pagina suportada: Effecti, Portal de Compras Publicas ou Licitar Digital.
+3. No Licitar Digital, conclua a verificacao de seguranca do site e aguarde o cabecalho do processo carregar.
+4. Atualize a pagina do portal.
+5. Recarregue a extensao e tente novamente.
 
 ### A mensagem informa que o local nao foi encontrado
 
@@ -178,6 +182,7 @@ node --check .\popup.js
 node --check .\content.js
 node --check .\effecti.js
 node --check .\portalCompras.js
+node --check .\licitardigital.js
 node --check .\utils.js
 Get-Content .\manifest.json -Raw | ConvertFrom-Json | Out-Null
 ```
@@ -186,6 +191,7 @@ Get-Content .\manifest.json -Raw | ConvertFrom-Json | Out-Null
 
 - Mudancas no layout, nos titulos ou nos seletores HTML da Effecti podem exigir ajustes no modulo correspondente.
 - Mudancas no layout dos processos do Portal de Compras Publicas podem exigir ajustes no modulo `portalCompras.js`.
+- Mudancas no cabecalho dos processos do Licitar Digital podem exigir ajustes no modulo `licitardigital.js`.
 - O resultado depende da disponibilidade e precisao dos servicos de geocodificacao.
 - Instituicoes sem cidade explicita podem depender do reconhecimento do nome completo pelo servico de geocodificacao.
 - A extensao foi projetada para uso local e ainda nao possui processo de publicacao na Chrome Web Store.
