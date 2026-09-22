@@ -15,12 +15,13 @@ A arquitetura foi estruturada por portal, com separação de responsabilidades e
 - renderização do mapa no popup
 - cálculo da distância para todas as cidades-base
 - indicação da cidade-base mais próxima
-- suporte a páginas da Effecti
+- suporte a páginas da Effecti, incluindo o layout autenticado da rota Minha Effecti
 - suporte a páginas do Portal de Compras Públicas
 - suporte a páginas do Licitar Digital
 - suporte a editais/procedimentos do PNCP
 - inserção do resultado no ponto correto da página, conforme a estrutura do portal
-- seleção geográfica mais robusta por aliases públicos e penalização de falsos positivos
+- identificação de município/entidade por campos canônicos e por aliases públicos
+- penalização de falsos positivos como escolas, universidades, hospitais e outros pontos não administrativos
 - cache de geolocalização e fallback entre serviços externos
 
 ## Requisitos
@@ -118,6 +119,7 @@ Esses serviços podem sofrer limitação de taxa ou indisponibilidade temporári
 - o geocoder pode não resolver a entidade com precisão
 - confirme se existe dado de UF/estado no contexto do processo
 - em casos de edificações públicas, verifique se o nome inclui termos como prefeitura, comando, batalhão, universidade federal, secretaria ou órgão
+- em páginas da Effecti com layout autenticado, a extensão agora considera o padrão de campo “Local … - UF” para evitar geocodificação de pontos não municipais
 
 ### Distância divergente da rota
 
@@ -158,4 +160,4 @@ Copyright (c) 2026 WATILEY ZANELATO DONDONI
 
 ## Versão
 
-`2.2`
+`2.3`

@@ -1,15 +1,30 @@
 async function processarEffecti(bases) {
-    const titulos = Array.from(document.querySelectorAll('h2'));
+    const selectors = [
+        'h2',
+        'h3',
+        'h4',
+        '[class*="titulo"]',
+        '[class*="title"]',
+        '[data-testid*="title"]',
+        '[data-testid*="titulo"]',
+        '[class*="card-title"]',
+        '[class*="notice"]'
+    ];
+
+    const titulos = Array.from(new Set(selectors.flatMap(sel => [...document.querySelectorAll(sel)])));
 
     for (const tituloEl of titulos) {
         if (tituloEl.querySelector?.('.dist-marker')) continue;
         if (tituloEl.classList?.contains('dist-marker')) continue;
 
-        const texto = tituloEl.innerText.trim();
-        if (!texto) continue;
+        const texto = (tituloEl.innerText || '').replace(/\s+/g, ' ').trim();
+        if (!texto || texto.length < 3 || /^(aviso|avisos|carteira|dados|entrar|login)$/i.test(texto)) continue;
 
-        const detalhes = (tituloEl.parentElement?.parentElement || tituloEl.parentElement)?.innerText || '';
-        const estadoMatch = detalhes.match(/Estado:\s*([A-Z]{2})/i);
+        const container = tituloEl.closest('[class*="card"], article, li, .item, .notice-item, .MuiCard-root, .MuiPaper-root') || tituloEl.parentElement || document.body;
+        const detalhes = (container.innerText || tituloEl.parentElement?.innerText || '').replace(/\s+/g, ' ').trim();
+
+        const estadoMatch = detalhes.match(/(?:Estado|UF)\s*[:\-]?\s*([A-Z]{2})/i)?.[1]?.toUpperCase()
+            || detalhes.match(/(?:^|[^A-Za-zÀ-ÿ])(?:Local|Cidade|Municipio|Município)\s*[:\-]?\s*([A-Za-zÀ-ÿ0-9' .-]+?)\s*-\s*([A-Z]{2})\b/i)?.[2]?.toUpperCase();
         const limpo = texto.replace(/\s+/g, ' ').trim();
         const anotacao = limpo.match(/\[([^\]]+)\]\s*$/)?.[1]?.trim() || '';
         const cidadeAnotada = anotacao.replace(/[-/]\s*[A-Z]{2}$/i, '').trim();
@@ -18,16 +33,24 @@ async function processarEffecti(bases) {
             || partes.at(-1)?.match(/^[A-Z]{2}$/i)?.[0]?.toUpperCase()
             || '';
 
-        const uf = estadoMatch?.[1]?.toUpperCase() || ufTitulo;
+        const uf = estadoMatch || ufTitulo;
+        const cidadeLocal = detalhes.match(/(?:^|[^A-Za-zÀ-ÿ])(?:Local|Cidade|Municipio|Município)\s*[:\-]?\s*([A-Za-zÀ-ÿ0-9' .-]+?)\s*-\s*[A-Z]{2}\b/i)?.[1]?.trim() || '';
         let cidade = ufTitulo && partes.length > 1 ? partes.at(-2) : limpo;
 
+        if (cidadeLocal) {
+            cidade = cidadeLocal;
+        }
+
         cidade = cidade
-            .replace(/^.*PREFEITURA MUNICIPAL DE\s+/g, '')
-            .replace(/^MUNIC[ÍI]PIO DE\s+/g, '')
+            .replace(/^.*PREFEITURA MUNICIPAL DE\s+/gi, '')
+            .replace(/^MUNIC[ÍI]PIO DE\s+/gi, '')
+            .replace(/^PREFEITURA DE\s+/gi, '')
+            .replace(/^.*?\bCIDADE\s+DE\b\s*/gi, '')
             .trim();
 
         if (cidadeAnotada) cidade = cidadeAnotada;
         if (!cidade || !uf) continue;
+        if (/^(objeto|servico|serviço|local|cidade|municipio|município|perfil de busca|modalidade|data inicial|data final|orgão|órgão)$/i.test(cidade)) continue;
 
         tituloEl.style.whiteSpace = 'normal';
         tituloEl.style.display = 'block';

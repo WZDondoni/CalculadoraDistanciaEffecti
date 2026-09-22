@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Calculador Distância Effecti",
-  "version": "2.2",
+  "version": "2.3",
   "permissions": ["storage", "activeTab", "scripting"],
   "icons": {
     "16": "lib/images/marker-icon.png",
