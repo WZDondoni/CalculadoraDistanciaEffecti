@@ -21,6 +21,8 @@ A arquitetura foi estruturada por portal, com separação de responsabilidades e
 - suporte a editais/procedimentos do PNCP
 - inserção do resultado no ponto correto da página, conforme a estrutura do portal
 - identificação de município/entidade por campos canônicos e por aliases públicos
+- resolução do município relevante no escopo do card, evitando reutilização de geocodificação entre itens distintos
+- exibição explícita de distância geodésica estimada, com abertura da rota detalhada no OpenStreetMap quando o usuário clica no ícone do mapa
 - penalização de falsos positivos como escolas, universidades, hospitais e outros pontos não administrativos
 - cache de geolocalização e fallback entre serviços externos
 
@@ -119,12 +121,13 @@ Esses serviços podem sofrer limitação de taxa ou indisponibilidade temporári
 - o geocoder pode não resolver a entidade com precisão
 - confirme se existe dado de UF/estado no contexto do processo
 - em casos de edificações públicas, verifique se o nome inclui termos como prefeitura, comando, batalhão, universidade federal, secretaria ou órgão
-- em páginas da Effecti com layout autenticado, a extensão agora considera o padrão de campo “Local … - UF” para evitar geocodificação de pontos não municipais
+- em páginas da Effecti com layout autenticado, a extensão agora considera o padrão de campo “Local … - UF” e o local mais próximo do título do card para evitar geocodificação de pontos não municipais ou reutilização indevida entre itens distintos
 
 ### Distância divergente da rota
 
 - o cálculo representa distância geodésica em linha reta
-- não reflete distância por rodovia, tempo de deslocamento ou rota otimizada
+- a extensão informa esse contexto explicitamente para evitar interpretação como distância rodoviária
+- quando necessário, o ícone do mapa abre a rota detalhada no OpenStreetMap para comparação com a trajetória real
 
 ## Desenvolvimento
 
@@ -160,4 +163,4 @@ Copyright (c) 2026 WATILEY ZANELATO DONDONI
 
 ## Versão
 
-`2.3`
+`2.5`

@@ -61,7 +61,7 @@ async function processarPncp(bases) {
 
             const maisPerto = distancias.reduce((menor, atual) => atual.d < menor.d ? atual : menor);
             const resumo = distancias.map(item => `${item.d.toFixed(0)} km de ${item.n}`).join(' | ');
-            labelDist.innerText = `📍 ${resumo} | mais próxima: ${maisPerto.n}`;
+            labelDist.innerText = `📍 Distância geodésica estimada: ${resumo} | mais próxima: ${maisPerto.n}`;
             labelDist.style.color = '#0056b3';
         } else {
             labelDist.innerText = `📍 Local não encontrado (${ufMatch})`;
