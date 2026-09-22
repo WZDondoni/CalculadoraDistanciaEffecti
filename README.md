@@ -20,6 +20,7 @@ A arquitetura foi estruturada por portal, com separação de responsabilidades e
 - suporte a páginas do Licitar Digital
 - suporte a editais/procedimentos do PNCP
 - inserção do resultado no ponto correto da página, conforme a estrutura do portal
+- seleção geográfica mais robusta por aliases públicos e penalização de falsos positivos
 - cache de geolocalização e fallback entre serviços externos
 
 ## Requisitos
@@ -60,11 +61,12 @@ popup.html           UI do popup
 popup.js             lógica de cadastro e busca de cidades
 content.js           dispatcher por plataforma
 utils.js             utilitários compartilhados
+publicAliases.js     aliases públicos para priorização de entidade relevante
 provedores/          módulos por provedor de dados/portal
-effecti.js           (movido para provedores/effecti.js)
-portalCompras.js     (movido para provedores/portalCompras.js)
-licitardigital.js    (movido para provedores/licitardigital.js)
-pncp.js              (movido para provedores/pncp.js)
+effecti.js           movido para provedores/effecti.js
+portalCompras.js     movido para provedores/portalCompras.js
+licitardigital.js    movido para provedores/licitardigital.js
+pncp.js              movido para provedores/pncp.js
 lib/                 assets do mapa e Leaflet
 README.md            documentação do projeto
 LICENSE              licença do projeto
@@ -115,6 +117,7 @@ Esses serviços podem sofrer limitação de taxa ou indisponibilidade temporári
 - o nome da instituição pode não conter município explícito
 - o geocoder pode não resolver a entidade com precisão
 - confirme se existe dado de UF/estado no contexto do processo
+- em casos de edificações públicas, verifique se o nome inclui termos como prefeitura, comando, batalhão, universidade federal, secretaria ou órgão
 
 ### Distância divergente da rota
 
@@ -128,11 +131,12 @@ A extensão é implementada em JavaScript puro, sem build step. A validação lo
 ```powershell
 node --check .\popup.js
 node --check .\content.js
-node --check .\effecti.js
-node --check .\portalCompras.js
-node --check .\licitardigital.js
-node --check .\pncp.js
 node --check .\utils.js
+node --check .\publicAliases.js
+node --check .\provedores\effecti.js
+node --check .\provedores\portalCompras.js
+node --check .\provedores\licitardigital.js
+node --check .\provedores\pncp.js
 Get-Content .\manifest.json -Raw | ConvertFrom-Json | Out-Null
 ```
 
@@ -141,6 +145,7 @@ Get-Content .\manifest.json -Raw | ConvertFrom-Json | Out-Null
 - mudanças de estrutura HTML em qualquer portal suportado podem exigir ajustes dos seletores
 - geocodificação depende da qualidade e disponibilidade dos serviços externos
 - entidades sem município explícito podem exigir resolução por nome completo ou unidade federativa
+- a extensão prioriza pontos públicos relevantes, mas ainda depende da qualidade do dado disponível no portal e do geocoder
 - a extensão é distribuída e usada localmente; não há publicação na Chrome Web Store
 
 ## Licença
@@ -153,4 +158,4 @@ Copyright (c) 2026 WATILEY ZANELATO DONDONI
 
 ## Versão
 
-`2.1`
+`2.2`

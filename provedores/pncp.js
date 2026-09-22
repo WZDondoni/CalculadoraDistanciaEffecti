@@ -5,29 +5,42 @@ async function processarPncp(bases) {
             return /^Órgão\/Entidade:\s*.+$/i.test(text) && text.length < 220;
         });
 
-    if (!paragrafoMunicipio || paragrafoMunicipio.parentElement?.querySelector('.dist-marker')) return;
+    const paragrafoLocalidade = [...document.querySelectorAll('p, div, span')]
+        .find(el => {
+            const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+            return /^Localidade da Unidade:\s*.+$/i.test(text) && text.length < 220;
+        });
 
-    const texto = (paragrafoMunicipio.textContent || '').replace(/\s+/g, ' ').trim();
-    const municipio = texto.replace(/^Órgão\/Entidade:\s*/i, '').trim();
-    if (!municipio) return;
+    if ((!paragrafoMunicipio && !paragrafoLocalidade) || (paragrafoMunicipio && paragrafoMunicipio.parentElement?.querySelector('.dist-marker')) || (paragrafoLocalidade && paragrafoLocalidade.parentElement?.querySelector('.dist-marker'))) return;
 
-    const cidadeBase = municipio
+    const localidadeTexto = (paragrafoLocalidade?.textContent || '').replace(/\s+/g, ' ').trim();
+    const entidadeTexto = (paragrafoMunicipio?.textContent || '').replace(/\s+/g, ' ').trim();
+
+    const localidade = localidadeTexto.replace(/^Localidade da Unidade:\s*/i, '').trim();
+    const entidade = entidadeTexto.replace(/^Órgão\/Entidade:\s*/i, '').trim();
+
+    const localReferencia = localidade || entidade;
+    if (!localReferencia) return;
+
+    const cidadeBase = localReferencia
+        .replace(/\s*\/\s*[A-Z]{2}\s*$/i, '')
         .replace(/^\d+[\.,\d\s/-]*\s*[-]\s*/i, '')
         .replace(/\s*[-|].*$/, '')
         .trim();
 
-    const ufMatch = municipio.match(/\b([A-Z]{2})\b/)?.[1]?.toUpperCase() || '';
+    const ufMatch = (localReferencia.match(/\b(AC|AL|AM|AP|BA|CE|DF|ES|GO|MA|MG|MS|MT|PA|PB|PE|PI|PR|RJ|RN|RO|RR|RS|SC|SE|SP|TO)\b/i)?.[1] || '').toUpperCase();
     if (!cidadeBase || !ufMatch) return;
 
     const container = document.createElement('div');
     container.className = 'dist-marker';
     container.style.cssText = 'display: block; margin-top: 6px; padding: 6px 8px; border-left: 3px solid #0056b3; background: #f3f7ff; border-radius: 4px; color: #1b3d6d; font-size: 12px; font-weight: 700; line-height: 1.4; width: fit-content;';
 
+    const targetEl = paragrafoLocalidade || paragrafoMunicipio;
     const labelDist = document.createElement('div');
     labelDist.style.cssText = 'display: block;';
     labelDist.innerText = ' ⏳ calculando...';
     container.appendChild(labelDist);
-    paragrafoMunicipio.parentElement?.insertBefore(container, paragrafoMunicipio.nextSibling);
+    targetEl.parentElement?.insertBefore(container, targetEl.nextSibling);
 
     try {
         const local = await localizarCidade(cidadeBase, ufMatch);
