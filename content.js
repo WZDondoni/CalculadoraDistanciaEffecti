@@ -44,4 +44,5 @@ chrome.runtime.onMessage.addListener((msg) => {
 });
 
 setTimeout(iniciarCalculo, 4000);
+window.addEventListener('hashchange', () => setTimeout(() => iniciarCalculo(true), 1500));
 new MutationObserver(() => iniciarCalculo()).observe(document.body, { childList: true, subtree: true });
