@@ -13,7 +13,9 @@ async function iniciarCalculo(recalcular = false) {
             ? 'portal'
             : location.hostname === 'app2.licitardigital.com.br'
                 ? 'licitardigital'
-            : null;
+                : location.hostname === 'pncp.gov.br'
+                    ? 'pncp'
+                    : null;
 
     if (!site) return;
 
@@ -29,6 +31,11 @@ async function iniciarCalculo(recalcular = false) {
 
     if (site === 'licitardigital') {
         await window.processarLicitarDigital(bases);
+        return;
+    }
+
+    if (site === 'pncp') {
+        await window.processarPncp(bases);
     }
 }
 

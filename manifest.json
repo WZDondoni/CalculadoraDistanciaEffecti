@@ -13,6 +13,7 @@
     "https://*.effecti.com.br/*",
     "https://*.portaldecompraspublicas.com.br/*",
     "https://app2.licitardigital.com.br/*",
+    "https://pncp.gov.br/*",
     "https://nominatim.openstreetmap.org/*",
     "https://photon.komoot.io/*",
     "https://*.tile.openstreetmap.de/*"
@@ -31,13 +32,15 @@
       "matches": [
         "https://*.effecti.com.br/*",
         "https://*.portaldecompraspublicas.com.br/processos/*",
-        "https://app2.licitardigital.com.br/pesquisa/*"
+        "https://app2.licitardigital.com.br/pesquisa/*",
+        "https://pncp.gov.br/*"
       ],
       "js": [
         "utils.js",
-        "effecti.js",
-        "portalCompras.js",
-        "licitardigital.js",
+        "provedores/effecti.js",
+        "provedores/portalCompras.js",
+        "provedores/licitardigital.js",
+        "provedores/pncp.js",
         "content.js"
       ],
       "run_at": "document_idle"

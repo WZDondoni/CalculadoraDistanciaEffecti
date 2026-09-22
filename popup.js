@@ -110,7 +110,7 @@ async function calcularNaAba() {
         } catch (error) {
             await chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                files: ['utils.js', 'effecti.js', 'portalCompras.js', 'licitardigital.js', 'content.js']
+                files: ['utils.js', 'provedores/effecti.js', 'provedores/portalCompras.js', 'provedores/licitardigital.js', 'provedores/pncp.js', 'content.js']
             });
             await chrome.tabs.sendMessage(tab.id, { action: "CALCULAR" });
         }

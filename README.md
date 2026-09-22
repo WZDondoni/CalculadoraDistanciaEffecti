@@ -1,181 +1,129 @@
-# Calculadora de Distancias Effecti
+# Calculadora de Distância para Portais Públicos
 
-Extensao para Google Chrome que calcula a distancia entre municipios e entidades exibidos na Effecti, em processos do Portal de Compras Publicas ou no Licitar Digital e uma ou mais cidades-base cadastradas pelo usuario.
+Extensão para Chrome que calcula a distância entre uma entidade pública e uma ou mais cidades-base cadastradas pelo usuário. A solução cobre os portais Effecti, Portal de Compras Públicas, Licitar Digital e PNCP.
+
+## Visão geral
+
+A extensão identifica o município ou entidade relevante em cada portal suportado, resolve a geolocalização, calcula a distância via fórmula de Haversine e exibe o resultado diretamente no contexto do processo ou edital.
+
+A arquitetura foi estruturada por portal, com separação de responsabilidades em módulos específicos para reduzir acoplamento e facilitar manutenção.
 
 ## Funcionalidades
 
-- Cadastro de uma ou mais cidades-base.
-- Pesquisa de cidades por nome.
-- Exibicao das cidades cadastradas no mapa.
-- Calculo da distancia para todas as cidades-base.
-- Indicacao da cidade-base mais proxima.
-- Uso das cidades-base atualizadas no proximo calculo.
-- Identificacao automatica de novos avisos carregados pela pagina da Effecti.
-- Suporte a paginas de processo do Portal de Compras Publicas.
-- Suporte a paginas de processo do Licitar Digital.
-- Reconhecimento de diferentes formatos de titulos, incluindo orgaos, instituicoes e nomes de empresas/entidades publicas.
-- Link com icone de mapa para abrir no OpenStreetMap o local usado no calculo.
-- Estrutura modular para separar regras especificas de cada portal.
+- cadastro de cidades-base
+- busca por município no popup
+- renderização do mapa no popup
+- cálculo da distância para todas as cidades-base
+- indicação da cidade-base mais próxima
+- suporte a páginas da Effecti
+- suporte a páginas do Portal de Compras Públicas
+- suporte a páginas do Licitar Digital
+- suporte a editais/procedimentos do PNCP
+- inserção do resultado no ponto correto da página, conforme a estrutura do portal
+- cache de geolocalização e fallback entre serviços externos
 
 ## Requisitos
 
-- Google Chrome, Microsoft Edge ou Brave com suporte a Manifest V3.
-- Acesso a uma pagina da plataforma Effecti, a um processo do Portal de Compras Publicas ou a um processo do Licitar Digital.
-- Conexao com a internet para consultar coordenadas geograficas.
+- Chrome, Edge ou Brave com suporte a Manifest V3
+- acesso a um portal suportado
+- conexão com a internet para consultas de geocodificação
 
-## Instalacao local
+## Instalação local
 
-Esta extensao nao precisa ser publicada na Chrome Web Store para ser usada. A instalacao e feita localmente pelo modo de desenvolvedor do Chrome.
+1. Extraia o arquivo ZIP em uma pasta local.
+2. Abra `chrome://extensions` ou `edge://extensions`.
+3. Ative o modo de desenvolvedor.
+4. Clique em “Carregar sem compactação”.
+5. Selecione a pasta que contém o `manifest.json`.
 
-### Preparar os arquivos
+## Fluxo de uso
 
-1. Localize o arquivo `CalculadoraDistanciaEffecti.zip`.
-2. Clique nele com o botao direito do mouse.
-3. Escolha **Extrair tudo**.
-4. Escolha um local facil de encontrar, como a Area de Trabalho.
-5. Mantenha a pasta extraida no computador. Nao selecione o arquivo ZIP diretamente no Chrome.
+1. Abra o popup da extensão.
+2. Informe o nome da cidade-base.
+3. Confirme o cadastro.
+4. Acesse uma página suportada.
+5. Execute o cálculo pela ação da extensão.
+6. Verifique o resultado exibido ao lado do campo municipal/entidade relevante.
+7. Use o ícone de mapa para abrir a localização no OpenStreetMap.
 
-### Carregar no navegador
+## Mecanismo de cálculo
 
-1. Abra `chrome://extensions` no Chrome ou `edge://extensions` no Microsoft Edge.
-2. Ative o **Modo do desenvolvedor**.
-3. Clique em **Carregar sem compactacao**.
-4. Selecione a pasta extraida que contem diretamente o arquivo `manifest.json`.
-5. Confirme que a extensao foi carregada sem erros.
+A extensão extrai a referência de município/entidade do portal, normaliza o valor e tenta localizar as coordenadas por geocodificação. Em seguida, calcula a distância em linha reta entre o ponto encontrado e cada cidade-base cadastrada.
 
-O icone da extensao aparecera na barra do Chrome. Se ele nao aparecer, clique no quebra-cabeca de extensoes e fixe a extensao.
+A fórmula aplicada é a de Haversine, que fornece uma estimativa geográfica aproximada e não substitui cálculo de rota ou distância rodoviária.
 
-### Atualizar a extensao
-
-Se receber uma nova versao em ZIP:
-
-1. Extraia o novo ZIP em uma nova pasta.
-2. Abra `chrome://extensions`.
-3. Remova a versao antiga ou clique em **Recarregar** depois de substituir os arquivos.
-4. Use a opcao **Carregar sem compactacao** e selecione a nova pasta.
-
-Se os arquivos forem alterados manualmente, basta abrir `chrome://extensions` e clicar em **Recarregar** na extensao.
-
-## Como usar
-
-1. Abra o popup clicando no icone da extensao.
-2. Digite pelo menos tres letras no campo de busca.
-3. Selecione uma cidade nos resultados.
-4. Informe o nome da cidade-base quando solicitado.
-5. Repita o processo para adicionar outras cidades.
-6. Abra a pagina de avisos da Effecti, um processo do Portal de Compras Publicas ou um processo do Licitar Digital.
-7. Clique em **CALCULAR DISTANCIAS**.
-8. Consulte o resultado exibido abaixo do municipio, da prefeitura ou da entidade reconhecida.
-9. Clique no icone de mapa ao lado do titulo para conferir no OpenStreetMap o local selecionado.
-
-Exemplo de resultado:
+## Estrutura do projeto
 
 ```text
-1709 km de Linhares-ES | 1887 km de Guacui-ES | mais proxima: Linhares-ES
+manifest.json        configuração da extensão e permissões
+popup.html           UI do popup
+popup.js             lógica de cadastro e busca de cidades
+content.js           dispatcher por plataforma
+utils.js             utilitários compartilhados
+provedores/          módulos por provedor de dados/portal
+effecti.js           (movido para provedores/effecti.js)
+portalCompras.js     (movido para provedores/portalCompras.js)
+licitardigital.js    (movido para provedores/licitardigital.js)
+pncp.js              (movido para provedores/pncp.js)
+lib/                 assets do mapa e Leaflet
+README.md            documentação do projeto
+LICENSE              licença do projeto
 ```
 
-Para remover uma cidade-base, abra o popup e clique no botao `X` correspondente. O proximo calculo usara somente as cidades que permanecerem cadastradas.
+## Permissões
 
-## Funcionamento
+- `storage`: persistência local das cidades-base
+- `activeTab`: acesso à aba ativa para execução do cálculo
+- `scripting`: reinjeção de scripts quando necessário
+- `host_permissions` para os portais suportados
+- `host_permissions` para os serviços de geocodificação (Nominatim e Photon)
 
-A extensao identifica o local do processo em cada portal suportado, extrai o municipio e o estado, consulta as coordenadas geograficas e calcula a distancia ate cada cidade-base cadastrada.
+## Serviços externos
 
-Na Effecti, a logica analisa os titulos dos avisos e os blocos de detalhes. No Portal de Compras Publicas, ela usa o botao que representa a entidade do processo. No Licitar Digital, ela usa o `h1` do cabecalho do processo, no formato `Pregao - entidade`, sem depender da palavra `prefeitura`. Assim, tambem pode processar consorcios, comandos e batalhoes quando o nome da entidade for o campo principal do processo.
+A extensão utiliza:
 
-Os titulos podem aparecer em formatos diferentes. A extensao reconhece, por exemplo:
+- Nominatim/OpenStreetMap para resolução geográfica
+- Photon como fallback e suporte à busca no popup
+- OpenStreetMap para visualização do ponto no mapa
 
-```text
-REDENCAO
-EMBRAPA GADO DE LEITE/JUIZ DE FORA/MG
-MUNICIPIO DE MESOPOLIS [MESOPOLIS-SP]
-MMG-PREFEITURA MUNICIPAL DE PERDOES
-```
-
-Quando o titulo nao informa claramente a cidade, a extensao usa o estado exibido nos detalhes do aviso e consulta o nome completo da instituicao. O icone de mapa abre as coordenadas efetivamente encontradas pelo servico de geocodificacao no OpenStreetMap.
-
-O calculo usa a formula de Haversine, portanto representa uma distancia geografica aproximada em linha reta. Ele nao representa a distancia ou o tempo de viagem por rodovia.
-
-## Estrutura dos arquivos
-
-```text
-manifest.json    Configuracao, permissoes e icones da extensao
-popup.html       Interface do popup
-popup.js         Busca, cadastro e remocao das cidades-base
-content.js       Ponto de entrada: identifica o portal e dispara a regra correta
-utils.js         Funcoes compartilhadas de geocodificacao e calculo de distancia
-effecti.js       Regras especificas para paginas da Effecti
-portalCompras.js Regras especificas para paginas do Portal de Compras Publicas
-licitardigital.js Regras especificas para paginas do Licitar Digital
-lib/             Leaflet, estilos e imagens do mapa
-README.md        Documentacao do projeto
-LICENSE          Licenca MIT e atribuicao do autor
-```
-
-## Permissoes
-
-- `storage`: salva as cidades-base no armazenamento local do Chrome.
-- `activeTab`: permite atuar na aba ativa quando o usuario solicita o calculo.
-- `scripting`: permite reinjetar o script da pagina quando necessario.
-- `host_permissions` para Effecti: permite executar a extensao nas paginas da plataforma.
-- `host_permissions` para Portal de Compras Publicas: permite executar a extensao em paginas de processo do portal.
-- `host_permissions` para Licitar Digital: permite executar a extensao em paginas de pesquisa de processos.
-- `host_permissions` para Photon e Nominatim: permitem consultar coordenadas de cidades.
-
-## Servicos externos
-
-A extensao usa servicos de geocodificacao para converter nomes de cidades em coordenadas:
-
-- Nominatim/OpenStreetMap: primeira tentativa para localizar cidades e instituicoes.
-- Photon: fallback da geocodificacao e servico usado na pesquisa de cidades do popup.
-- OpenStreetMap: fornece as imagens do mapa do popup e exibe o local encontrado ao clicar no icone de mapa.
-
-Esses servicos podem impor limites de requisicoes ou ficar temporariamente indisponiveis. Por isso, a extensao possui fallback entre Photon e Nominatim e cache durante a sessao da pagina.
+Esses serviços podem sofrer limitação de taxa ou indisponibilidade temporária. O projeto implementa fallback e cache local de sessão para mitigar esse cenário.
 
 ## Privacidade
 
-- As cidades-base ficam armazenadas localmente no Chrome.
-- Os nomes das cidades pesquisadas sao enviados aos servicos Photon ou Nominatim para obter coordenadas.
-- A extensao nao possui servidor proprio nem envia os dados para uma API mantida por este projeto.
-- Links de avisos da Effecti podem conter identificadores de acesso. Nao publique esses links em repositorios, documentacao ou chamados de suporte.
+- as cidades-base são armazenadas localmente no navegador
+- consultas de geocodificação são encaminhadas aos serviços externos
+- não existe backend próprio para coleta de dados do usuário
+- links e identificadores de páginas públicas podem conter dados sensíveis; evitar publicação em repositórios públicos
 
-## Licenca
+## Solução de problemas
 
-Este projeto esta disponivel sob a licenca MIT. Voce pode usar, copiar, modificar e distribuir o software, desde que mantenha o arquivo `LICENSE`, o aviso de copyright e a atribuicao ao autor:
+### Popup sem resultados
 
-```text
-Copyright (c) 2026 WATILEY ZANELATO DONDONI
-```
+- confirme que o texto informado contém ao menos 3 caracteres
+- verifique conexão com a internet
+- recarregue a extensão em `chrome://extensions`
 
-## Solucao de problemas
+### Cálculo não executado
 
-### O popup nao pesquisa cidades
+- confirme a existência de pelo menos uma cidade-base cadastrada
+- valide se a aba ativa corresponde a um portal suportado
+- para PNCP e Licitar Digital, aguarde o carregamento completo da página e da entidade/órgão relevante
+- recarregue a página e a extensão antes de repetir a ação
 
-1. Confirme se digitou pelo menos tres letras.
-2. Verifique a conexao com a internet.
-3. Recarregue a extensao em `chrome://extensions`.
-4. Feche e abra novamente o popup.
+### Local não encontrado
 
-### O botao nao calcula
+- o nome da instituição pode não conter município explícito
+- o geocoder pode não resolver a entidade com precisão
+- confirme se existe dado de UF/estado no contexto do processo
 
-1. Confirme que existe pelo menos uma cidade-base cadastrada.
-2. Verifique se a aba ativa e uma pagina suportada: Effecti, Portal de Compras Publicas ou Licitar Digital.
-3. No Licitar Digital, conclua a verificacao de seguranca do site e aguarde o cabecalho do processo carregar.
-4. Atualize a pagina do portal.
-5. Recarregue a extensao e tente novamente.
+### Distância divergente da rota
 
-### A mensagem informa que o local nao foi encontrado
-
-O titulo pode nao conter uma cidade explicita ou o servico de geocodificacao pode nao reconhecer o nome da instituicao. Verifique se o aviso possui um campo `Estado:` valido, confirme a conexao com a internet e tente novamente mais tarde.
-
-Quando o local for encontrado, use o icone de mapa ao lado do titulo para conferir se o ponto selecionado esta correto.
-
-### A distancia parece diferente da rota no mapa
-
-Isso e esperado: o calculo usa distancia em linha reta, nao distancia por rodovia.
+- o cálculo representa distância geodésica em linha reta
+- não reflete distância por rodovia, tempo de deslocamento ou rota otimizada
 
 ## Desenvolvimento
 
-Os arquivos usam JavaScript executado diretamente pelo Chrome, sem etapa de compilacao. Para validar alteracoes localmente:
+A extensão é implementada em JavaScript puro, sem build step. A validação local pode ser executada com:
 
 ```powershell
 node --check .\popup.js
@@ -183,19 +131,26 @@ node --check .\content.js
 node --check .\effecti.js
 node --check .\portalCompras.js
 node --check .\licitardigital.js
+node --check .\pncp.js
 node --check .\utils.js
 Get-Content .\manifest.json -Raw | ConvertFrom-Json | Out-Null
 ```
 
-## Limitacoes conhecidas
+## Limitações conhecidas
 
-- Mudancas no layout, nos titulos ou nos seletores HTML da Effecti podem exigir ajustes no modulo correspondente.
-- Mudancas no layout dos processos do Portal de Compras Publicas podem exigir ajustes no modulo `portalCompras.js`.
-- Mudancas no cabecalho dos processos do Licitar Digital podem exigir ajustes no modulo `licitardigital.js`.
-- O resultado depende da disponibilidade e precisao dos servicos de geocodificacao.
-- Instituicoes sem cidade explicita podem depender do reconhecimento do nome completo pelo servico de geocodificacao.
-- A extensao foi projetada para uso local e ainda nao possui processo de publicacao na Chrome Web Store.
+- mudanças de estrutura HTML em qualquer portal suportado podem exigir ajustes dos seletores
+- geocodificação depende da qualidade e disponibilidade dos serviços externos
+- entidades sem município explícito podem exigir resolução por nome completo ou unidade federativa
+- a extensão é distribuída e usada localmente; não há publicação na Chrome Web Store
 
-## Versao
+## Licença
 
-Versao atual: `2.1`
+Projeto distribuído sob a licença MIT. Mantenha o arquivo de licença e os avisos de copyright.
+
+```text
+Copyright (c) 2026 WATILEY ZANELATO DONDONI
+```
+
+## Versão
+
+`2.1`
