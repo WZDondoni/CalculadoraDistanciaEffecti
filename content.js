@@ -1,3 +1,22 @@
+const estiloImpressao = document.createElement('style');
+estiloImpressao.id = 'ext-dist-print-style';
+estiloImpressao.textContent = `
+    @media print {
+        .dist-marker {
+            font-size: 16px !important;
+            line-height: 1.5 !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
+        .dist-marker a {
+            font-size: 18px !important;
+        }
+    }
+`;
+if (!document.getElementById('ext-dist-print-style')) {
+    document.head.appendChild(estiloImpressao);
+}
+
 async function iniciarCalculo(recalcular = false) {
     if (recalcular) {
         document.querySelectorAll('.dist-marker').forEach(marker => marker.remove());

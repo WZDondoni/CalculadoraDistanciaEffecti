@@ -23,6 +23,8 @@ A arquitetura foi estruturada por portal, com separação de responsabilidades e
 - identificação de município/entidade por campos canônicos e por aliases públicos
 - resolução do município relevante no escopo do card, evitando reutilização de geocodificação entre itens distintos
 - exibição explícita de distância geodésica estimada, com abertura da rota detalhada no OpenStreetMap quando o usuário clica no ícone do mapa
+- padronização da rota em todos os portais suportados, incluindo PNCP, Portal de Compras Públicas e Licitar Digital
+- melhoria de legibilidade na impressão do texto de distância, sem comprometer a estrutura do portal
 - penalização de falsos positivos como escolas, universidades, hospitais e outros pontos não administrativos
 - cache de geolocalização e fallback entre serviços externos
 
@@ -128,6 +130,7 @@ Esses serviços podem sofrer limitação de taxa ou indisponibilidade temporári
 - o cálculo representa distância geodésica em linha reta
 - a extensão informa esse contexto explicitamente para evitar interpretação como distância rodoviária
 - quando necessário, o ícone do mapa abre a rota detalhada no OpenStreetMap para comparação com a trajetória real
+- em páginas de impressão, o texto gerado pela extensão mantém legibilidade adequada sem prejudicar a formatação original
 
 ## Desenvolvimento
 

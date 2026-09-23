@@ -56,13 +56,19 @@ async function processarPncp(bases) {
 
             const distancias = bases.map(base => ({
                 d: calcularDistanciaKm(local.lat, local.lon, base.lat, base.lon),
-                n: base.nome
+                n: base.nome,
+                lat: base.lat,
+                lon: base.lon
             }));
 
             const maisPerto = distancias.reduce((menor, atual) => atual.d < menor.d ? atual : menor);
             const resumo = distancias.map(item => `${item.d.toFixed(0)} km de ${item.n}`).join(' | ');
             labelDist.innerText = `📍 Distância geodésica estimada: ${resumo} | mais próxima: ${maisPerto.n}`;
             labelDist.style.color = '#0056b3';
+
+            const rotaUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${local.lat},${local.lon};${maisPerto.lat},${maisPerto.lon}`;
+            linkMapa.href = rotaUrl;
+            linkMapa.title = `Rota: ${cidadeBase}, ${ufMatch} → ${maisPerto.n}`;
         } else {
             labelDist.innerText = `📍 Local não encontrado (${ufMatch})`;
         }

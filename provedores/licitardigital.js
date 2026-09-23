@@ -32,12 +32,18 @@ async function processarLicitarDigital(bases) {
 
         const distancias = bases.map(base => ({
             d: calcularDistanciaKm(local.lat, local.lon, base.lat, base.lon),
-            n: base.nome
+            n: base.nome,
+            lat: base.lat,
+            lon: base.lon
         }));
         const maisPerto = distancias.reduce((menor, atual) => atual.d < menor.d ? atual : menor);
         const resumo = distancias.map(item => `${item.d.toFixed(0)} km de ${item.n}`).join(' | ');
         marcador.firstChild.textContent = `📍 ${resumo} | mais próxima: ${maisPerto.n}`;
         marcador.style.color = '#0056b3';
+
+        const rotaUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${local.lat},${local.lon};${maisPerto.lat},${maisPerto.lon}`;
+        linkMapa.href = rotaUrl;
+        linkMapa.title = `Rota: ${entidade} → ${maisPerto.n}`;
     } catch (erro) {
         marcador.innerText = '📍 Não foi possível calcular agora';
     }
