@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Calculador Distância Effecti",
-  "version": "2.5",
+  "version": "2.6",
   "permissions": ["storage", "activeTab", "scripting"],
   "icons": {
     "16": "lib/images/marker-icon.png",
@@ -14,6 +14,7 @@
     "https://*.portaldecompraspublicas.com.br/*",
     "https://app2.licitardigital.com.br/*",
     "https://pncp.gov.br/*",
+    "https://bllcompras.com/*",
     "https://nominatim.openstreetmap.org/*",
     "https://photon.komoot.io/*",
     "https://*.tile.openstreetmap.de/*"
@@ -33,7 +34,8 @@
         "https://*.effecti.com.br/*",
         "https://*.portaldecompraspublicas.com.br/processos/*",
         "https://app2.licitardigital.com.br/pesquisa/*",
-        "https://pncp.gov.br/*"
+        "https://pncp.gov.br/*",
+        "https://bllcompras.com/*"
       ],
       "js": [
         "utils.js",
@@ -42,6 +44,7 @@
         "provedores/portalCompras.js",
         "provedores/licitardigital.js",
         "provedores/pncp.js",
+        "provedores/bllcompras.js",
         "content.js"
       ],
       "run_at": "document_idle"
