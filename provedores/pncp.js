@@ -54,16 +54,14 @@ async function processarPncp(bases) {
             linkMapa.style.cssText = 'font-size: 16px; text-decoration: none; margin-left: 6px; vertical-align: middle;';
             container.appendChild(linkMapa);
 
-            const distancias = bases.map(base => ({
-                d: calcularDistanciaKm(local.lat, local.lon, base.lat, base.lon),
-                n: base.nome,
-                lat: base.lat,
-                lon: base.lon
-            }));
+            const distancias = await calcularDistanciasRodoviarias(local, bases);
 
-            const maisPerto = distancias.reduce((menor, atual) => atual.d < menor.d ? atual : menor);
-            const resumo = distancias.map(item => `${item.d.toFixed(0)} km de ${item.n}`).join(' | ');
-            labelDist.innerText = `📍 Distância geodésica estimada: ${resumo} | mais próxima: ${maisPerto.n}`;
+            const rotasDisponiveis = distancias.filter(item => Number.isFinite(item.d));
+            const maisPerto = rotasDisponiveis.reduce((menor, atual) => atual.d < menor.d ? atual : menor);
+            const resumo = distancias.map(item => Number.isFinite(item.d)
+                ? `${item.d.toFixed(0)} km de ${item.n}`
+                : `rota indisponível para ${item.n}`).join(' | ');
+            labelDist.innerText = `📍 Distância rodoviária estimada: ${resumo} | mais próxima: ${maisPerto.n}`;
             labelDist.style.color = '#0056b3';
 
             const rotaUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${local.lat},${local.lon};${maisPerto.lat},${maisPerto.lon}`;
@@ -73,6 +71,6 @@ async function processarPncp(bases) {
             labelDist.innerText = `📍 Local não encontrado (${ufMatch})`;
         }
     } catch (e) {
-        labelDist.innerText = '📍 Não foi possível calcular agora';
+        labelDist.innerText = '📍 Não foi possível calcular a distância rodoviária agora';
     }
 }

@@ -15,6 +15,7 @@
     "https://app2.licitardigital.com.br/*",
     "https://pncp.gov.br/*",
     "https://bllcompras.com/*",
+    "https://router.project-osrm.org/*",
     "https://nominatim.openstreetmap.org/*",
     "https://photon.komoot.io/*",
     "https://*.tile.openstreetmap.de/*"

@@ -1,7 +1,7 @@
 function extrairLocalMaisProximo(bloco, titulo) {
     if (!bloco) return { cidade: '', uf: '' };
 
-    const matches = [...bloco.matchAll(/(?:^|[^A-Za-zÀ-ÿ])(?:Local|Cidade|Municipio|Município)\s*[:\-]?\s*([A-Za-zÀ-ÿ0-9' .-]+?)\s*-\s*([A-Z]{2})\b/gi)];
+    const matches = [...bloco.matchAll(/(?:^|[^A-Za-zÀ-ÿ0-9])(?:Local|Cidade|Municipio|Município)\b\s*[:\-]?\s*([A-Za-zÀ-ÿ0-9' .-]+?)\s*-\s*([A-Z]{2})\b/gi)];
     if (!matches.length) return { cidade: '', uf: '' };
 
     const indiceTitulo = bloco.indexOf(titulo || '');
@@ -20,6 +20,24 @@ function extrairLocalMaisProximo(bloco, titulo) {
     }
 
     return melhor ? { cidade: melhor.cidade, uf: melhor.uf } : { cidade: '', uf: '' };
+}
+
+function extrairLocalDoCard(container) {
+    if (!container) return { cidade: '', uf: '' };
+
+    for (const topico of container.querySelectorAll('.topic')) {
+        const rotulo = (topico.querySelector('.top')?.innerText || '')
+            .replace(/\blocation_on\b/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        if (!/^Local$/i.test(rotulo)) continue;
+
+        const textoLocal = (topico.querySelector('.bottom')?.innerText || '').replace(/\s+/g, ' ').trim();
+        const match = textoLocal.match(/^(.+?)\s*-\s*([A-Z]{2})$/i);
+        if (match) return { cidade: match[1].trim(), uf: match[2].toUpperCase() };
+    }
+
+    return { cidade: '', uf: '' };
 }
 
 async function processarEffecti(bases) {
@@ -44,26 +62,26 @@ async function processarEffecti(bases) {
         const texto = (tituloEl.innerText || '').replace(/\s+/g, ' ').trim();
         if (!texto || texto.length < 3 || /^(aviso|avisos|carteira|dados|entrar|login|conversas|selecionar uma conversa)$/i.test(texto)) continue;
 
-        const container = tituloEl.closest('[class*="card"], article, li, .item, .notice-item, .MuiCard-root, .MuiPaper-root') || tituloEl.parentElement || document.body;
+        const container = tituloEl.closest('.bidding-container, [class*="card"], article, li, .item, .notice-item, .MuiCard-root, .MuiPaper-root') || tituloEl.parentElement || document.body;
         const detalhes = (container.innerText || tituloEl.parentElement?.innerText || '').replace(/\s+/g, ' ').trim();
 
         const limpo = texto.replace(/\s+/g, ' ').trim();
         const anotacao = limpo.match(/\[([^\]]+)\]\s*$/)?.[1]?.trim() || '';
-        const cidadeAnotada = anotacao.replace(/[-/]\s*[A-Z]{2}$/i, '').trim();
-        const partes = (cidadeAnotada || limpo).split('/').map(parte => parte.trim()).filter(Boolean);
-        const ufTitulo = anotacao.match(/[-/]\s*([A-Z]{2})$/i)?.[1]?.toUpperCase()
+        const anotacaoLocal = anotacao.match(/^(.+?)\s*[-/]\s*([A-Z]{2})$/i);
+        const cidadeAnotada = anotacaoLocal?.[1]?.trim() || '';
+        const partes = limpo.split('/').map(parte => parte.trim()).filter(Boolean);
+        const ufTitulo = anotacaoLocal?.[2]?.toUpperCase()
             || partes.at(-1)?.match(/^[A-Z]{2}$/i)?.[0]?.toUpperCase()
             || '';
 
-        const localMaisProximo = extrairLocalMaisProximo(detalhes, limpo);
-        const estadoMatch = detalhes.match(/(?:Estado|UF)\s*[:\-]?\s*([A-Z]{2})/i)?.[1]?.toUpperCase() || localMaisProximo.uf;
-        const uf = estadoMatch || ufTitulo;
-        const cidadeLocal = localMaisProximo.cidade || '';
-        let cidade = ufTitulo && partes.length > 1 ? partes.at(-2) : limpo;
-
-        if (cidadeLocal) {
-            cidade = cidadeLocal;
-        }
+        const localMaisProximo = extrairLocalDoCard(container);
+        const localEncontrado = localMaisProximo.cidade
+            ? localMaisProximo
+            : extrairLocalMaisProximo(detalhes, limpo);
+        const estadoMatch = detalhes.match(/(?:Estado|UF)\s*[:\-]?\s*([A-Z]{2})/i)?.[1]?.toUpperCase() || '';
+        const uf = localEncontrado.uf || estadoMatch || ufTitulo;
+        const cidadeLocal = localEncontrado.cidade || '';
+        let cidade = cidadeLocal || cidadeAnotada || (ufTitulo && partes.length > 1 ? partes.at(-2) : limpo);
 
         cidade = cidade
             .replace(/^.*PREFEITURA MUNICIPAL DE\s+/gi, '')
@@ -72,7 +90,6 @@ async function processarEffecti(bases) {
             .replace(/^.*?\bCIDADE\s+DE\b\s*/gi, '')
             .trim();
 
-        if (cidadeAnotada) cidade = cidadeAnotada;
         if (!cidade || !uf) continue;
         if (/^(objeto|servico|serviço|local|cidade|municipio|município|perfil de busca|modalidade|data inicial|data final|orgão|órgão)$/i.test(texto)) continue;
         if (/^(objeto|servico|serviço|local|cidade|municipio|município|perfil de busca|modalidade|data inicial|data final|orgão|órgão)$/i.test(cidade)) continue;
@@ -87,7 +104,7 @@ async function processarEffecti(bases) {
         tituloEl.appendChild(labelDist);
 
         try {
-            const local = await localizarCidade(cidade, uf);
+            const local = await localizarCidade(cidade, uf, true);
             if (local) {
                 const linkMapa = document.createElement('a');
                 linkMapa.href = `https://www.openstreetmap.org/?mlat=${local.lat}&mlon=${local.lon}#map=16/${local.lat}/${local.lon}`;
@@ -98,16 +115,14 @@ async function processarEffecti(bases) {
                 linkMapa.style.cssText = 'font-size: 16px; text-decoration: none; margin-left: 6px;';
                 tituloEl.appendChild(linkMapa);
 
-                const distancias = bases.map(b => ({
-                    d: calcularDistanciaKm(local.lat, local.lon, b.lat, b.lon),
-                    n: b.nome,
-                    lat: b.lat,
-                    lon: b.lon
-                }));
+                const distancias = await calcularDistanciasRodoviarias(local, bases);
 
-                const maisPerto = distancias.reduce((menor, atual) => atual.d < menor.d ? atual : menor);
-                const resumo = distancias.map(item => `${item.d.toFixed(0)} km de ${item.n}`).join(' | ');
-                labelDist.innerText = `📍 Distância geodésica estimada: ${resumo} | mais próxima: ${maisPerto.n}`;
+                const rotasDisponiveis = distancias.filter(item => Number.isFinite(item.d));
+                const maisPerto = rotasDisponiveis.reduce((menor, atual) => atual.d < menor.d ? atual : menor);
+                const resumo = distancias.map(item => Number.isFinite(item.d)
+                    ? `${item.d.toFixed(0)} km de ${item.n}`
+                    : `rota indisponível para ${item.n}`).join(' | ');
+                labelDist.innerText = `📍 Distância rodoviária estimada: ${resumo} | mais próxima: ${maisPerto.n}`;
                 labelDist.style.color = '#0056b3';
 
                 const rotaUrl = `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${local.lat},${local.lon};${maisPerto.lat},${maisPerto.lon}`;
@@ -117,7 +132,7 @@ async function processarEffecti(bases) {
                 labelDist.innerText = `📍 Local não encontrado (${uf})`;
             }
         } catch (e) {
-            labelDist.innerText = '📍 Não foi possível calcular agora';
+            labelDist.innerText = '📍 Não foi possível calcular a distância rodoviária agora';
         }
 
         await new Promise(resolve => setTimeout(resolve, 1200));

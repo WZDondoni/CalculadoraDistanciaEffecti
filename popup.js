@@ -101,8 +101,9 @@ async function calcularNaAba() {
         const ehEffecti = url.includes('effecti.com.br');
         const ehPortalCompras = url.includes('portaldecompraspublicas.com.br/processos/');
         const ehLicitarDigital = url.includes('app2.licitardigital.com.br/pesquisa/');
-        if (!tab?.id || (!ehEffecti && !ehPortalCompras && !ehLicitarDigital)) {
-            throw new Error('Abra um processo da Effecti, do Portal de Compras Públicas ou do Licitar Digital na aba ativa.');
+        const ehBllCompras = url.includes('bllcompras.com');
+        if (!tab?.id || (!ehEffecti && !ehPortalCompras && !ehLicitarDigital && !ehBllCompras)) {
+            throw new Error('Abra um processo da Effecti, do Portal de Compras Públicas, do Licitar Digital ou do BLL Compras na aba ativa.');
         }
 
         try {
@@ -110,7 +111,7 @@ async function calcularNaAba() {
         } catch (error) {
             await chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                files: ['utils.js', 'publicAliases.js', 'provedores/effecti.js', 'provedores/portalCompras.js', 'provedores/licitardigital.js', 'provedores/pncp.js', 'content.js']
+                files: ['utils.js', 'publicAliases.js', 'provedores/effecti.js', 'provedores/portalCompras.js', 'provedores/licitardigital.js', 'provedores/pncp.js', 'provedores/bllcompras.js', 'content.js']
             });
             await chrome.tabs.sendMessage(tab.id, { action: "CALCULAR" });
         }

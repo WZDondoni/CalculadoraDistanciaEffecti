@@ -17,10 +17,19 @@ if (!document.getElementById('ext-dist-print-style')) {
     document.head.appendChild(estiloImpressao);
 }
 
+let calculoEmAndamento = false;
+
 async function iniciarCalculo(recalcular = false) {
+    if (calculoEmAndamento && !recalcular) return;
     if (recalcular) {
         document.querySelectorAll('.dist-marker').forEach(marker => marker.remove());
+    } else if (document.querySelector('.dist-marker')) {
+        return;
     }
+
+    calculoEmAndamento = true;
+
+    try {
 
     const res = await chrome.storage.local.get(['cidadesReferencia']);
     const bases = res.cidadesReferencia || [];
@@ -34,7 +43,9 @@ async function iniciarCalculo(recalcular = false) {
                 ? 'licitardigital'
                 : location.hostname === 'pncp.gov.br'
                     ? 'pncp'
-                    : null;
+                    : location.hostname === 'bllcompras.com'
+                        ? 'bllcompras'
+                        : null;
 
     if (!site) return;
 
@@ -55,6 +66,14 @@ async function iniciarCalculo(recalcular = false) {
 
     if (site === 'pncp') {
         await window.processarPncp(bases);
+        return;
+    }
+
+    if (site === 'bllcompras') {
+        await window.processarBllCompras(bases);
+    }
+    } finally {
+        calculoEmAndamento = false;
     }
 }
 
@@ -64,4 +83,8 @@ chrome.runtime.onMessage.addListener((msg) => {
 
 setTimeout(iniciarCalculo, 4000);
 window.addEventListener('hashchange', () => setTimeout(() => iniciarCalculo(true), 1500));
-new MutationObserver(() => iniciarCalculo()).observe(document.body, { childList: true, subtree: true });
+new MutationObserver(() => {
+    if (!document.querySelector('.dist-marker')) {
+        iniciarCalculo();
+    }
+}).observe(document.body, { childList: true, subtree: true });

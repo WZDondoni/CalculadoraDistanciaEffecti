@@ -22,7 +22,8 @@ A arquitetura foi estruturada por portal, com separação de responsabilidades e
 - inserção do resultado no ponto correto da página, conforme a estrutura do portal
 - identificação de município/entidade por campos canônicos e por aliases públicos
 - resolução do município relevante no escopo do card, evitando reutilização de geocodificação entre itens distintos
-- exibição explícita de distância geodésica estimada, com abertura da rota detalhada no OpenStreetMap quando o usuário clica no ícone do mapa
+- validação do nome do município e da UF nos resultados geográficos da Effecti para evitar rotas para locais homônimos ou incorretos
+- exibição de distância rodoviária estimada, com seleção da cidade-base mais próxima pela rota de carro e abertura da rota no OpenStreetMap
 - padronização da rota em todos os portais suportados, incluindo PNCP, Portal de Compras Públicas e Licitar Digital
 - melhoria de legibilidade na impressão do texto de distância, sem comprometer a estrutura do portal
 - penalização de falsos positivos como escolas, universidades, hospitais e outros pontos não administrativos
@@ -54,9 +55,7 @@ A arquitetura foi estruturada por portal, com separação de responsabilidades e
 
 ## Mecanismo de cálculo
 
-A extensão extrai a referência de município/entidade do portal, normaliza o valor e tenta localizar as coordenadas por geocodificação. Em seguida, calcula a distância em linha reta entre o ponto encontrado e cada cidade-base cadastrada.
-
-A fórmula aplicada é a de Haversine, que fornece uma estimativa geográfica aproximada e não substitui cálculo de rota ou distância rodoviária.
+A extensão extrai a referência de município/entidade do portal, normaliza o valor e tenta localizar as coordenadas por geocodificação. Em seguida, consulta a matriz de rotas de carro do OSRM para estimar a distância pelas estradas entre o município e cada cidade-base, selecionando como mais próxima a base com menor distância rodoviária. O resultado depende da cobertura dos mapas e da disponibilidade do serviço de rotas; não representa necessariamente o trajeto real escolhido pelo motorista.
 
 ## Estrutura do projeto
 
@@ -83,7 +82,7 @@ LICENSE              licença do projeto
 - `activeTab`: acesso à aba ativa para execução do cálculo
 - `scripting`: reinjeção de scripts quando necessário
 - `host_permissions` para os portais suportados
-- `host_permissions` para os serviços de geocodificação (Nominatim e Photon)
+- `host_permissions` para os serviços de geocodificação (Nominatim e Photon) e roteamento (OSRM)
 
 ## Serviços externos
 
@@ -91,6 +90,7 @@ A extensão utiliza:
 
 - Nominatim/OpenStreetMap para resolução geográfica
 - Photon como fallback e suporte à busca no popup
+- OSRM para estimativa de distância rodoviária entre o município e as cidades-base
 - OpenStreetMap para visualização do ponto no mapa
 
 Esses serviços podem sofrer limitação de taxa ou indisponibilidade temporária. O projeto implementa fallback e cache local de sessão para mitigar esse cenário.
@@ -123,13 +123,12 @@ Esses serviços podem sofrer limitação de taxa ou indisponibilidade temporári
 - o geocoder pode não resolver a entidade com precisão
 - confirme se existe dado de UF/estado no contexto do processo
 - em casos de edificações públicas, verifique se o nome inclui termos como prefeitura, comando, batalhão, universidade federal, secretaria ou órgão
-- em páginas da Effecti com layout autenticado, a extensão agora considera o padrão de campo “Local … - UF” e o local mais próximo do título do card para evitar geocodificação de pontos não municipais ou reutilização indevida entre itens distintos
+- em páginas da Effecti com layout autenticado, a extensão prioriza a cidade e a UF do campo “Local … - UF” e valida ambos no resultado geográfico antes de traçar a rota. Se não houver correspondência, não usa coordenadas de outra cidade; só usa uma cidade anotada no título quando ela vem acompanhada da UF.
 
 ### Distância divergente da rota
 
-- o cálculo representa distância geodésica em linha reta
-- a extensão informa esse contexto explicitamente para evitar interpretação como distância rodoviária
-- quando necessário, o ícone do mapa abre a rota detalhada no OpenStreetMap para comparação com a trajetória real
+- a extensão estima distância rodoviária pelo OSRM, e o ícone abre a rota no OpenStreetMap; diferenças pequenas podem ocorrer devido a atualização dos dados ou ao percurso selecionado pelo roteador
+- se o serviço OSRM estiver indisponível ou não encontrar uma rota, a extensão informa que não foi possível calcular a distância rodoviária, sem substituí-la por uma distância em linha reta
 - em páginas de impressão, o texto gerado pela extensão mantém legibilidade adequada sem prejudicar a formatação original
 
 ## Desenvolvimento
